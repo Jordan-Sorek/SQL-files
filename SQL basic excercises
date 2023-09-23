@@ -1,0 +1,19 @@
+# Ex1
+SELECT * FROM cd.facilities where membercost >0;
+
+# Ex2
+select facid, name, membercost, monthlymaintenance FROM cd.facilities 
+      WHERE membercost > 0 and 
+      membercost < monthlymaintenance/50;
+
+# Ex3
+SELECT * FROM cd.facilities 
+		WHERE name LIKE '%Tennis%'
+;
+
+# Ex4
+select * FROM cd.facilities
+			WHERE facid in (1, 5)
+;
+
+# Ex5
