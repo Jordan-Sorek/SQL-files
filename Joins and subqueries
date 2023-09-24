@@ -1,0 +1,97 @@
+# Ex1
+SELECT starttime FROM cd.bookings 
+	WHERE memid = (SELECT memid FROM cd.members 
+				   		WHERE firstname = 'David' 
+				   		AND surname = 'Farrell')
+;
+
+# Ex2
+SELECT cd.bookings.starttime, cd.facilities.name FROM cd.bookings, cd.facilities
+	WHERE cd.bookings.facid = cd.facilities.facid
+	AND name LIKE 'Tennis%'
+	AND starttime > '2012-09-21'
+	AND starttime < '2012-09-22'
+	ORDER BY starttime
+;
+
+# Ex3
+SELECT firstname, surname FROM cd.members
+	WHERE memid IN (SELECT recommendedby FROM cd.members)
+	ORDER BY surname
+;
+
+# Ex4
+SELECT mem.firstname AS memfname, mem.surname AS memsname, rec.firstname AS recfname, rec.surname AS recsname FROM cd.members mem
+  LEFT OUTER JOIN cd.members rec
+  ON rec.memid = mem.recommendedby
+  ORDER BY memsname, memfname
+;
+
+# Ex5
+SELECT distinct mem.firstname || ' ' ||mem.surname AS member, fac.name AS facility FROM cd.bookings
+	LEFT OUTER JOIN cd.members mem
+	ON cd.bookings.memid = mem.memid
+	JOIN cd.facilities fac
+	ON cd.bookings.facid = fac.facid
+	WHERE fac.name LIKE 'Tennis%'
+	ORDER BY member, facility
+;
+
+# Ex6
+SELECT
+  	mem.firstname || ' ' || mem.surname AS member, 
+  	fac.name AS facility,
+  	CASE 
+  		WHEN mem.memid = 0 THEN fac.guestcost * book.slots
+  		ELSE fac.membercost * book.slots
+  	END AS cost
+  FROM cd.members mem
+  JOIN cd.bookings AS book
+  	ON mem.memid = book.memid
+  JOIN cd.facilities fac
+  	ON fac.facid = book.facid
+  WHERE 
+      book.starttime > '2012-09-14' AND book.starttime < '2012-09-15' AND 
+        CASE 
+          WHEN mem.memid = 0 THEN fac.guestcost * book.slots
+  		    ELSE fac.membercost * book.slots
+  	    END > 30
+  ORDER BY cost DESC, member
+;
+
+# Ex7
+SELECT DISTINCT mem.firstname || ' ' || mem.surname AS member,
+	
+	(SELECT  rec.firstname || ' ' || rec.surname AS recommender 
+		FROM cd.members rec WHERE rec.memid = mem.recommendedby)
+	
+	FROM cd.members mem
+	ORDER BY member
+;
+
+# Ex8
+SELECT member, facility, cost from (
+  
+SELECT
+	mem.firstname || ' ' || mem.surname AS member, 
+	fac.name AS facility, 
+	CASE
+		WHEN mem.memid = 0 THEN 
+  			book.slots * fac.guestcost
+		ELSE 
+  			book.slots * fac.membercost 
+		
+	END AS cost
+	
+	FROM cd.members  mem
+	JOIN cd.bookings book
+		ON book.memid = mem.memid
+	JOIN cd.facilities fac
+		ON fac.facid = book.facid
+	WHERE 
+		(book.starttime > '2012-09-14' AND
+		 book.starttime < '2012-09-15')
+) AS bookings
+WHERE cost > 30
+ORDER BY cost DESC, member
+;
